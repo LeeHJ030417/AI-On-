@@ -28,19 +28,12 @@ export const PROJECT_PHASES: Phase[] = [
         geminiPrompt: 'Summarize the main findings and methodology of the paper "Selectively Answering Ambiguous Questions (2023)". Explain its relevance to building a hallucination detection system.',
         icon: PaperIcon,
       },
-      {
-        id: '1-3',
-        title: '가설 수립',
-        description: '질문의 내재적 모호함으로 인해 환각을 완전히 억제하는 것의 어려움을 증명하는 핵심 가설을 개발합니다.',
-        geminiPrompt: 'Help me formulate a strong, testable scientific hypothesis about the relationship between question ambiguity and the rate of AI hallucinations. The goal is to prove that complete suppression is unfeasible.',
-        icon: LightbulbIcon,
-      },
     ],
   },
   {
     id: 'phase-2',
     title: '2단계: 데이터 및 모델 준비',
-    description: '기반 모델을 선정하고, 개발 환경을 구축하며, 훈련에 필요한 데이터셋을 준비합니다.',
+    description: '기반 모델을 선정하고, 훈련에 필요한 데이터셋을 준비합니다.',
     icon: DataIcon,
     tasks: [
       {
@@ -52,13 +45,6 @@ export const PROJECT_PHASES: Phase[] = [
       },
       {
         id: '2-2',
-        title: '개발 인프라 구축',
-        description: '모델 훈련 및 실험을 위해 GPU를 지원하는 Google Colab 환경을 설정합니다.',
-        geminiPrompt: 'Provide a step-by-step guide to setting up a Python environment in Google Colab for using the Gemini API, including installing necessary libraries and managing API keys.',
-        icon: CodeIcon,
-      },
-      {
-        id: '2-3',
         title: '모호한 질문 데이터셋 생성',
         description: '질문 데이터셋을 생성하고, 모호성 수준을 상/중/하로 분류합니다.',
         geminiPrompt: 'Generate a sample dataset of 15 questions for testing an LLM. 5 should be highly ambiguous, 5 moderately ambiguous, and 5 unambiguous. For each, explain the source of ambiguity.',

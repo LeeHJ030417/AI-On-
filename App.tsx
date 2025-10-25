@@ -4,10 +4,7 @@ import Header from './components/Header';
 import CustomPromptSection from './components/CustomPromptSection';
 import ProjectSummary from './components/ProjectSummary';
 import Roadmap from './components/Roadmap';
-import TaskDetailModal from './components/TaskDetailModal';
-import { Task } from './types';
 import { PROJECT_PHASES } from './constants';
-import { generateGuidance } from './services/geminiService';
 import LightbulbIcon from './components/icons/LightbulbIcon';
 import PaperIcon from './components/icons/PaperIcon';
 import LandingPage from './components/LandingPage';
@@ -15,43 +12,7 @@ import ArrowLeftIcon from './components/icons/ArrowLeftIcon';
 
 const App: React.FC = () => {
   const [isStarted, setIsStarted] = useState<boolean>(false);
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [aiGuidance, setAiGuidance] = useState<string>('');
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string>('');
   const [view, setView] = useState<'main' | 'summary' | 'roadmap'>('main');
-
-  const handleTaskSelect = async (task: Task) => {
-    setSelectedTask(task);
-    setIsModalOpen(true);
-    setError('');
-    setAiGuidance('');
-    setIsLoading(true);
-
-    try {
-      const systemInstruction = `당신은 전문 AI 연구원이자 프로젝트 관리자입니다. 당신의 임무는 주어진 작업 설명의 사실적 및 논리적 모순을 분석하는 것입니다.
-응답은 반드시 다음 세 가지 마크다운 섹션을 포함해야 합니다:
-1.  **사실적 모순 분석**: [작업 설명의 사실적 모순을 분석합니다. 모순이 없다면 "모순이 발견되지 않았습니다."라고만 적습니다.]
-2.  **논리적 모순 분석**: [작업 설명의 논리적 모순을 분석합니다. 모순이 없다면 "모순이 발견되지 않았습니다."라고만 적습니다.]
-3.  **수정된 가이드**: [모순이 발견된 경우, 수정된 실행 가이드를 제공합니다. 모순이 없는 경우, 원래 작업에 대한 실행 가이드를 제공합니다.]`;
-      const userPrompt = `작업: "${task.geminiPrompt}"`;
-      const guidance = await generateGuidance(userPrompt, systemInstruction);
-      setAiGuidance(guidance);
-    } catch (err) {
-      setError('AI 가이드를 가져오는데 실패했습니다. API 키를 확인하고 다시 시도해주세요.');
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setSelectedTask(null);
-    setAiGuidance('');
-    setError('');
-  };
 
   if (!isStarted) {
     return <LandingPage onStart={() => setIsStarted(true)} />;
@@ -84,7 +45,7 @@ const App: React.FC = () => {
               <ArrowLeftIcon className="w-5 h-5 text-brand-primary" />
               <span className="font-semibold text-brand-text-main">뒤로가기</span>
             </button>
-            <Roadmap phases={PROJECT_PHASES} onTaskSelect={handleTaskSelect} />
+            <Roadmap phases={PROJECT_PHASES} />
           </div>
         );
       case 'main':
@@ -135,15 +96,6 @@ const App: React.FC = () => {
           {renderContent()}
         </main>
       </div>
-      {isModalOpen && selectedTask && (
-        <TaskDetailModal
-          task={selectedTask}
-          onClose={closeModal}
-          aiGuidance={aiGuidance}
-          isLoading={isLoading}
-          error={error}
-        />
-      )}
     </div>
   );
 };

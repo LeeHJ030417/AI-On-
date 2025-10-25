@@ -1,14 +1,13 @@
 
 import React, { useState } from 'react';
-import { Phase, Task } from '../types';
+import { Phase } from '../types';
 import PhaseCard from './PhaseCard';
 
 interface RoadmapProps {
   phases: Phase[];
-  onTaskSelect: (task: Task) => void;
 }
 
-const Roadmap: React.FC<RoadmapProps> = ({ phases, onTaskSelect }) => {
+const Roadmap: React.FC<RoadmapProps> = ({ phases }) => {
   const [expandedPhaseId, setExpandedPhaseId] = useState<string | null>(null);
 
   const handlePhaseToggle = (phaseId: string) => {
@@ -24,7 +23,6 @@ const Roadmap: React.FC<RoadmapProps> = ({ phases, onTaskSelect }) => {
           <PhaseCard
             key={phase.id}
             phase={phase}
-            onTaskSelect={onTaskSelect}
             isExpanded={expandedPhaseId === phase.id}
             onToggle={() => handlePhaseToggle(phase.id)}
           />

@@ -1,16 +1,15 @@
 
 import React from 'react';
-import { Phase, Task } from '../types';
+import { Phase } from '../types';
 import ChevronDownIcon from './icons/ChevronDownIcon';
 
 interface PhaseCardProps {
   phase: Phase;
-  onTaskSelect: (task: Task) => void;
   isExpanded: boolean;
   onToggle: () => void;
 }
 
-const PhaseCard: React.FC<PhaseCardProps> = ({ phase, onTaskSelect, isExpanded, onToggle }) => {
+const PhaseCard: React.FC<PhaseCardProps> = ({ phase, isExpanded, onToggle }) => {
   const { title, description, tasks, icon: PhaseIcon } = phase;
 
   return (
@@ -35,10 +34,9 @@ const PhaseCard: React.FC<PhaseCardProps> = ({ phase, onTaskSelect, isExpanded, 
               {tasks.map((task) => {
                 const TaskIcon = task.icon;
                 return (
-                  <button
+                  <div
                     key={task.id}
-                    onClick={() => onTaskSelect(task)}
-                    className="w-full text-left p-4 bg-gray-800/50 rounded-lg flex items-center space-x-4 hover:bg-brand-primary/20 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-brand-primary"
+                    className="w-full text-left p-4 bg-gray-800/50 rounded-lg flex items-center space-x-4"
                   >
                     <div className="flex-shrink-0 bg-brand-secondary/20 p-2 rounded-md">
                       <TaskIcon className="w-5 h-5 text-brand-secondary" />
@@ -47,7 +45,7 @@ const PhaseCard: React.FC<PhaseCardProps> = ({ phase, onTaskSelect, isExpanded, 
                       <p className="font-semibold text-brand-text-main">{task.title}</p>
                       <p className="text-sm text-brand-text-secondary">{task.description}</p>
                     </div>
-                  </button>
+                  </div>
                 );
               })}
             </div>
