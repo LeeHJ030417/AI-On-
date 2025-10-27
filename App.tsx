@@ -13,6 +13,8 @@ import ArrowLeftIcon from './components/icons/ArrowLeftIcon';
 const App: React.FC = () => {
   const [isStarted, setIsStarted] = useState<boolean>(false);
   const [view, setView] = useState<'main' | 'summary' | 'roadmap'>('main');
+  const [temperature, setTemperature] = useState<number>(0.3);
+  const [topP, setTopP] = useState<number>(0.95);
 
   if (!isStarted) {
     return <LandingPage onStart={() => setIsStarted(true)} />;
@@ -52,7 +54,7 @@ const App: React.FC = () => {
       default:
         return (
           <>
-            <CustomPromptSection />
+            <CustomPromptSection temperature={temperature} topP={topP} />
             <div className="my-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
               <button
                 onClick={() => setView('summary')}
@@ -91,7 +93,14 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-brand-bg font-sans p-4 sm:p-6 lg:p-8 animate-fadeIn">
       <div className="max-w-7xl mx-auto">
-        <Header onGoHome={() => setIsStarted(false)} />
+        <Header
+          onGoHome={() => setIsStarted(false)}
+          view={view}
+          temperature={temperature}
+          setTemperature={setTemperature}
+          topP={topP}
+          setTopP={setTopP}
+        />
         <main className="mt-8">
           {renderContent()}
         </main>

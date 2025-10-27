@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import type { Chat } from '@google/genai';
 import { ai } from '../services/geminiService';
@@ -12,7 +13,12 @@ interface Message {
   isError?: boolean;
 }
 
-const CustomPromptSection: React.FC = () => {
+interface CustomPromptSectionProps {
+  temperature: number;
+  topP: number;
+}
+
+const CustomPromptSection: React.FC<CustomPromptSectionProps> = ({ temperature, topP }) => {
   const [prompt, setPrompt] = useState<string>('');
   const [conversation, setConversation] = useState<Message[]>([]);
   const chatRef = useRef<Chat | null>(null);
@@ -30,12 +36,12 @@ const CustomPromptSection: React.FC = () => {
       model: 'gemini-2.5-flash',
       config: {
         systemInstruction: systemInstruction,
-        temperature: 0.3,
-        topP: 0.95,
+        temperature: temperature,
+        topP: topP,
         topK: 64,
       },
     });
-  }, []);
+  }, [temperature, topP]);
 
   useEffect(() => {
     conversationEndRef.current?.scrollIntoView({ behavior: 'smooth' });
