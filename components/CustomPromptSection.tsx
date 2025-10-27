@@ -30,7 +30,7 @@ const CustomPromptSection: React.FC = () => {
       model: 'gemini-2.5-flash',
       config: {
         systemInstruction: systemInstruction,
-        temperature: 0.5,
+        temperature: 0.3,
         topP: 0.95,
         topK: 64,
       },

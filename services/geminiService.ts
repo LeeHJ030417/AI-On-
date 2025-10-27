@@ -15,7 +15,7 @@ export async function generateGuidance(contents: string, systemInstruction?: str
       contents: contents,
       config: {
         systemInstruction: systemInstruction,
-        temperature: 0.5,
+        temperature: 0.3,
         topP: 0.95,
         topK: 64,
       }
