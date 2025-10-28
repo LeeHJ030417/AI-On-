@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import type { Chat } from '@google/genai';
 import { ai } from '../services/geminiService';
@@ -6,12 +5,11 @@ import LightbulbIcon from './icons/LightbulbIcon';
 import AiIcon from './icons/AiIcon';
 import UserIcon from './icons/UserIcon';
 import SendIcon from './icons/SendIcon';
-
-interface Message {
-  role: 'user' | 'model';
-  content: string;
-  isError?: boolean;
-}
+import { Message, AnalysisMessage } from '../types';
+import AnalysisIcon from './icons/AnalysisIcon';
+import AnalysisResult from './AnalysisResult';
+import { tokenizeKoreanText, generateCombinations } from '../utils/analyzer';
+import { checkForContradiction } from '../services/geminiService';
 
 interface CustomPromptSectionProps {
   temperature: number;
@@ -20,7 +18,7 @@ interface CustomPromptSectionProps {
 
 const CustomPromptSection: React.FC<CustomPromptSectionProps> = ({ temperature, topP }) => {
   const [prompt, setPrompt] = useState<string>('');
-  const [conversation, setConversation] = useState<Message[]>([]);
+  const [conversation, setConversation] = useState<(Message | AnalysisMessage)[]>([]);
   const chatRef = useRef<Chat | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const conversationEndRef = useRef<HTMLDivElement | null>(null);
@@ -72,6 +70,62 @@ const CustomPromptSection: React.FC<CustomPromptSectionProps> = ({ temperature, 
       setIsLoading(false);
     }
   };
+  
+  const handleAnalysis = async () => {
+    if (!prompt.trim() || isLoading) return;
+
+    const analysisId = `analysis-${Date.now()}`;
+    const analysisMessage: AnalysisMessage = {
+      role: 'analysis',
+      id: analysisId,
+      input: prompt,
+      status: 'pending',
+    };
+
+    setConversation((prev) => [...prev, analysisMessage]);
+    const currentPrompt = prompt;
+    setPrompt('');
+    setIsLoading(true);
+
+    try {
+      const tokens = tokenizeKoreanText(currentPrompt);
+      const combinations = generateCombinations(tokens);
+      const hallucinatedCombinations: { combo: string[]; reason: string }[] = [];
+
+      const checks = combinations.map(async (combo) => {
+        const result = await checkForContradiction(combo.join(' '));
+        if (result.isContradiction) {
+          hallucinatedCombinations.push({ combo, reason: result.reason });
+        }
+      });
+      
+      await Promise.all(checks);
+
+      const finalResult: AnalysisMessage = {
+        ...analysisMessage,
+        status: 'complete',
+        results: {
+          tokens,
+          totalCombinations: combinations.length,
+          hallucinatedCombinations,
+        },
+      };
+
+      setConversation(prev => prev.map(msg => msg.role === 'analysis' && msg.id === analysisId ? finalResult : msg));
+
+    } catch (err) {
+      console.error(err);
+      const errorMessage: AnalysisMessage = {
+        ...analysisMessage,
+        status: 'error',
+        error: '분석 중 오류가 발생했습니다. 다시 시도해주세요.',
+      };
+      setConversation(prev => prev.map(msg => msg.role === 'analysis' && msg.id === analysisId ? errorMessage : msg));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
 
   const formatGuidance = (text: string) => {
     return text
@@ -88,45 +142,50 @@ const CustomPromptSection: React.FC<CustomPromptSectionProps> = ({ temperature, 
       <div className="flex-shrink-0">
         <div className="flex items-center space-x-3 mb-4">
           <LightbulbIcon className="w-6 h-6 text-brand-secondary" />
-          <h2 className="text-2xl font-bold text-brand-primary">AI와 대화하기</h2>
+          <h2 className="text-2xl font-bold text-brand-primary">AI와 대화 & 분석</h2>
         </div>
         <p className="text-brand-text-secondary mb-4">
-          AI에게 질문하여 환각 현상을 테스트하고 답변의 모순을 분석해보세요.
+          AI에게 질문하여 환각 현상을 테스트하거나, 문장을 입력하여 환각률을 직접 분석해보세요.
         </p>
       </div>
 
       <div className="flex-grow overflow-y-auto pr-4 -mr-4 mb-4 space-y-6">
-        {conversation.map((msg, index) => (
-          <div key={index} className={`flex items-start gap-3 ${msg.role === 'user' ? 'justify-end' : ''}`}>
-            {msg.role === 'model' && (
-              <div className="flex-shrink-0 bg-brand-primary/20 p-2 rounded-full mt-1">
-                <AiIcon className="w-5 h-5 text-brand-primary" />
+        {conversation.map((msg, index) => {
+          if (msg.role === 'analysis') {
+            return <AnalysisResult key={msg.id} message={msg} />;
+          }
+          return (
+            <div key={index} className={`flex items-start gap-3 ${msg.role === 'user' ? 'justify-end' : ''}`}>
+              {msg.role === 'model' && (
+                <div className="flex-shrink-0 bg-brand-primary/20 p-2 rounded-full mt-1">
+                  <AiIcon className="w-5 h-5 text-brand-primary" />
+                </div>
+              )}
+              <div className={`w-auto max-w-xl rounded-lg px-4 py-3 ${
+                  msg.role === 'user'
+                    ? 'bg-brand-primary/20 text-brand-text-main'
+                    : msg.isError
+                    ? 'bg-red-900/50 text-red-400'
+                    : 'bg-gray-800/50 text-brand-text-secondary'
+              }`}>
+                {msg.role === 'user' ? (
+                  <p>{msg.content}</p>
+                ) : (
+                  <div
+                    className="prose prose-invert text-brand-text-secondary leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: formatGuidance(msg.content) }}
+                  />
+                )}
               </div>
-            )}
-            <div className={`w-auto max-w-xl rounded-lg px-4 py-3 ${
-                msg.role === 'user'
-                  ? 'bg-brand-primary/20 text-brand-text-main'
-                  : msg.isError
-                  ? 'bg-red-900/50 text-red-400'
-                  : 'bg-gray-800/50 text-brand-text-secondary'
-            }`}>
-              {msg.role === 'user' ? (
-                <p>{msg.content}</p>
-              ) : (
-                <div
-                  className="prose prose-invert text-brand-text-secondary leading-relaxed"
-                  dangerouslySetInnerHTML={{ __html: formatGuidance(msg.content) }}
-                />
+               {msg.role === 'user' && (
+                <div className="flex-shrink-0 bg-brand-secondary/20 p-2 rounded-full mt-1">
+                  <UserIcon className="w-5 h-5 text-brand-secondary" />
+                </div>
               )}
             </div>
-             {msg.role === 'user' && (
-              <div className="flex-shrink-0 bg-brand-secondary/20 p-2 rounded-full mt-1">
-                <UserIcon className="w-5 h-5 text-brand-secondary" />
-              </div>
-            )}
-          </div>
-        ))}
-        {isLoading && (
+          );
+        })}
+        {isLoading && conversation[conversation.length - 1]?.role !== 'analysis' && (
           <div className="flex items-start gap-3">
              <div className="flex-shrink-0 bg-brand-primary/20 p-2 rounded-full mt-1">
                 <AiIcon className="w-5 h-5 text-brand-primary" />
@@ -153,7 +212,7 @@ const CustomPromptSection: React.FC<CustomPromptSectionProps> = ({ temperature, 
               handleSubmit();
             }
           }}
-          placeholder="AI에게 질문을 입력하세요. (ex: 나폴레옹은 독일 사람이니?)"
+          placeholder="AI에게 질문 또는 분석할 문장을 입력하세요."
           className="flex-grow bg-white text-gray-900 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-brand-primary resize-none"
           rows={2}
           disabled={isLoading}
@@ -161,10 +220,22 @@ const CustomPromptSection: React.FC<CustomPromptSectionProps> = ({ temperature, 
         <button
           onClick={handleSubmit}
           disabled={isLoading || !prompt.trim()}
-          className="flex items-center justify-center gap-2 px-4 py-3 bg-brand-primary text-white font-semibold rounded-lg hover:bg-blue-500 disabled:bg-gray-500 disabled:cursor-not-allowed transition-colors self-stretch"
+          className="flex flex-col items-center justify-center p-2 bg-brand-primary text-white font-semibold rounded-lg hover:bg-blue-500 disabled:bg-gray-500 disabled:cursor-not-allowed transition-colors self-stretch"
           aria-label="Send message"
+          title="대화하기"
         >
           <SendIcon className="w-5 h-5" />
+           <span className="text-xs mt-1">대화</span>
+        </button>
+         <button
+          onClick={handleAnalysis}
+          disabled={isLoading || !prompt.trim()}
+          className="flex flex-col items-center justify-center p-2 bg-brand-secondary text-white font-semibold rounded-lg hover:bg-purple-500 disabled:bg-gray-500 disabled:cursor-not-allowed transition-colors self-stretch"
+          aria-label="Analyze for hallucinations"
+          title="환각률 분석"
+        >
+          <AnalysisIcon className="w-5 h-5" />
+          <span className="text-xs mt-1">분석</span>
         </button>
       </div>
     </div>
