@@ -1,4 +1,4 @@
-const EMPHASIS_PARTICLES = ['만', '밖에', '도', '은', '는', '까지', '조차', '이라도', '라도', '뿐', '이나', '나마', '부터'];
+const EMPHASIS_PARTICLES = ['만', '밖에', '도', '까지', '조차', '이라도', '라도', '뿐', '이나', '나마', '부터'];
 
 export function tokenizeKoreanText(text: string): string[] {
   const tokens: string[] = [];
