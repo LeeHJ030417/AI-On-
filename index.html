@@ -4,14 +4,18 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AI-On(알온)</title>
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
         theme: {
           extend: {
+            fontFamily: {
+              sans: ['Pretendard', 'sans-serif'],
+            },
             colors: {
               'brand-bg': '#1E1E1E', // VS Code editor background
-              'brand-surface': '#252526', // VS Code sidebar background
+              'brand-surface': '#2C2C2C', // Slightly brighter surface color for panels
               'brand-primary': '#3B82F6',
               'brand-secondary': '#8B5CF6',
               'brand-text-main': '#F9FAFB',

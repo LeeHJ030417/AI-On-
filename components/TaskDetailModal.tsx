@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Task } from '../types';
 import CloseIcon from './icons/CloseIcon';
@@ -9,9 +8,10 @@ interface TaskDetailModalProps {
   aiGuidance: string;
   isLoading: boolean;
   error: string;
+  usageMetadata?: { totalTokenCount: number };
 }
 
-const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ task, onClose, aiGuidance, isLoading, error }) => {
+const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ task, onClose, aiGuidance, isLoading, error, usageMetadata }) => {
   const TaskIcon = task.icon;
 
   const renderGuidance = () => {
@@ -19,19 +19,15 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ task, onClose, aiGuid
       return (
         <div className="flex items-center justify-center space-x-2 text-brand-text-secondary">
           <div className="w-4 h-4 border-2 border-t-transparent border-brand-primary rounded-full animate-spin"></div>
-          <span>AI 가이드를 생성하는 중...</span>
+          <span>AI 가이드 생성 중...</span>
         </div>
       );
     }
     if (error) {
       return <div className="text-red-400 bg-red-900/50 p-3 rounded-lg">{error}</div>;
     }
-    // A simple markdown to HTML converter for bold, newlines, and contradiction analysis sections
+    
     const formattedGuidance = aiGuidance
-      .replace(/(\d+\.\s*)?\*\*사실적 모순 분석\*\*/g, '<div class="font-bold text-brand-text-main mt-8 mb-2">1. 사실적 모순 분석</div>')
-      .replace(/(\d+\.\s*)?\*\*논리적 모순 분석\*\*/g, '<div class="font-bold text-brand-text-main mt-8 mb-2">2. 논리적 모순 분석</div>')
-      .replace(/(\d+\.\s*)?\*\*수정된 가이드\*\*/g, '<div class="font-bold text-brand-text-main mt-8 mb-2">3. 수정된 가이드</div>')
-      .replace(/(<\/div>):\s*/g, '$1 - ')
       .replace(/\*\*(.*?)\*\*/g, '<strong class="text-brand-text-main">$1</strong>')
       .replace(/(\r\n|\n)/g, '<br />');
 
@@ -57,7 +53,14 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ task, onClose, aiGuid
         </div>
         
         <div className="p-6 overflow-y-auto flex-grow">
-          <h3 className="text-lg font-semibold text-brand-secondary mb-4">AI 기반 가이드</h3>
+          <div className="flex justify-between items-center mb-4">
+             <h3 className="text-lg font-semibold text-brand-secondary">AI 기반 가이드</h3>
+             {usageMetadata && (
+                <div className="text-xs text-gray-400 bg-gray-900/50 px-3 py-1 rounded-md">
+                    Tokens: {usageMetadata.totalTokenCount}
+                </div>
+            )}
+          </div>
           <div className="p-4 bg-gray-800/50 rounded-lg min-h-[100px]">
              {renderGuidance()}
           </div>

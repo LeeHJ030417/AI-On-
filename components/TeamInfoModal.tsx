@@ -1,6 +1,6 @@
 import React from 'react';
 import CloseIcon from './icons/CloseIcon';
-import UsersIcon from './icons/UsersIcon';
+import MouseIcon from './icons/MouseIcon';
 import LinkIcon from './icons/LinkIcon';
 
 interface TeamInfoModalProps {
@@ -14,7 +14,7 @@ const TeamInfoModal: React.FC<TeamInfoModalProps> = ({ onClose }) => {
         <div className="p-6 border-b border-gray-700 flex justify-between items-center">
           <div className="flex items-center space-x-4">
              <div className="flex-shrink-0 bg-brand-secondary/20 p-3 rounded-lg">
-              <UsersIcon className="w-6 h-6 text-brand-secondary" />
+              <MouseIcon className="w-6 h-6 text-brand-secondary" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-brand-text-main">팀 Dying Mouse(주근지) 소개</h2>

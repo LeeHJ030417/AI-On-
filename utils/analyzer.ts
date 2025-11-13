@@ -50,7 +50,7 @@ export function generateCombinations(tokens: string[], windowSize = 5, minSize =
   const processArray = (arr: string[]) => {
       for (let size = minSize; size <= arr.length; size++) {
           const combos = getCombinations(arr, size);
-          combos.forEach(combo => allCombinations.add(JSON.stringify(combo.sort())));
+          combos.forEach(combo => allCombinations.add(JSON.stringify(combo)));
       }
   }
   
